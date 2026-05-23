@@ -1,0 +1,143 @@
+import requests
+import time
+import json
+import os
+import re
+
+class PinchtabGeminiClient:
+    def __init__(self, base_url="http://localhost:9868", token=None):
+        self.base_url = base_url
+        self.headers = {
+            "Authorization": f"Bearer {token}" if token else "",
+            "Content-Type": "application/json"
+        }
+
+    def navigate(self, url, tab_id=None, new_tab=False):
+        print(f"Navigating to {url}...")
+        payload = {"url": url}
+        if tab_id:
+            payload["tabId"] = tab_id
+        if new_tab:
+            payload["newTab"] = True
+        resp = requests.post(f"{self.base_url}/navigate", headers=self.headers, json=payload)
+        resp.raise_for_status()
+        return resp.json()
+
+    def get_snapshot(self, filter="interactive", tab_id=None):
+        url = f"{self.base_url}/snapshot?filter={filter}"
+        if tab_id:
+            url += f"&tabId={tab_id}"
+        resp = requests.get(url, headers=self.headers)
+        resp.raise_for_status()
+        return resp.json()
+
+    def focus_tab(self, tab_id):
+        resp = requests.post(f"{self.base_url}/tab", headers=self.headers, json={
+            "action": "focus",
+            "tabId": tab_id
+        })
+        resp.raise_for_status()
+        return resp.json()
+
+    def close_tab(self, tab_id):
+        resp = requests.post(f"{self.base_url}/close", headers=self.headers, json={
+            "tabId": tab_id
+        })
+        resp.raise_for_status()
+        return resp.json()
+
+    def perform_action(self, kind, ref=None, text=None, press_enter=False):
+        payload = {"kind": kind}
+        if ref: payload["ref"] = ref
+        if text: payload["text"] = text
+        if press_enter: payload["pressEnter"] = True
+        
+        resp = requests.post(f"{self.base_url}/action", headers=self.headers, json=payload)
+        resp.raise_for_status()
+        return resp.json()
+
+    def evaluate_js(self, tab_id, expression):
+        resp = requests.post(
+            f"{self.base_url}/tabs/{tab_id}/evaluate",
+            headers=self.headers,
+            json={"expression": expression}
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def find_node(self, snapshot, role=None, name=None, testid=None, text_contains=None):
+        for node in snapshot.get("nodes", []):
+            if role and node.get("role") != role: continue
+            if name and node.get("name") != name: continue
+            if testid and node.get("testid") != testid: continue
+            if text_contains:
+                text_val = node.get("text") or ""
+                name_val = node.get("name") or ""
+                if text_contains not in text_val and text_contains not in name_val:
+                    continue
+            return node
+        return None
+
+    def generate_image(self, prompt):
+        print(f"Generating image for prompt: {prompt}")
+        # 1. Start fresh or ensure we are on Gemini
+        nav_res = self.navigate("https://gemini.google.com/app")
+        tab_id = nav_res.get("tabId")
+        if not tab_id:
+            raise Exception("Could not retrieve tab ID from navigation")
+        time.sleep(5) # Wait for load
+        
+        # 2. Find prompt box
+        self.focus_tab(tab_id)
+        snap = self.get_snapshot(tab_id=tab_id)
+        prompt_box = self.find_node(snap, role="textbox")
+        if not prompt_box:
+            raise Exception("Could not find Gemini prompt box")
+        
+        # 3. Type prompt via JS and click send
+        escaped_prompt = json.dumps(prompt)
+        js_expr = f"""
+        (() => {{
+          const el = document.querySelector('div[contenteditable="true"][aria-label*="Gemini"], div[contenteditable="true"]');
+          if (!el) return "Element not found";
+          el.focus();
+          el.textContent = {escaped_prompt};
+          el.dispatchEvent(new Event('input', {{ bubbles: true }}));
+          el.dispatchEvent(new Event('change', {{ bubbles: true }}));
+          return "Success";
+        }})()
+        """
+        self.evaluate_js(tab_id, js_expr)
+        time.sleep(1)
+        
+        # Click send button
+        self.focus_tab(tab_id)
+        snap = self.get_snapshot(tab_id=tab_id)
+        send_btn = self.find_node(snap, name="Send message")
+        if not send_btn:
+            send_btn = self.find_node(snap, role="button", text_contains="Send")
+        if not send_btn or send_btn.get("disabled"):
+            raise Exception("Send button not found or disabled after typing")
+            
+        self.perform_action("click", ref=send_btn["ref"])
+        print("Waiting for generation...")
+        
+        # 4. Wait for images (Gemini usually takes 10-20s)
+        for _ in range(12): # Wait up to 60s
+            time.sleep(5)
+            snap = self.get_snapshot(filter="all", tab_id=tab_id)
+            # Look for download buttons or image blobs
+            # Gemini images are usually in <img> tags or have "Download" buttons
+            download_btn = self.find_node(snap, role="button", text_contains="Download")
+            if download_btn:
+                print("Found download button!")
+                return True
+        
+        print("Timed out waiting for image generation.")
+        return False
+
+# Usage Example
+if __name__ == "__main__":
+    TOKEN = os.environ.get("PINCHTAB_TOKEN", "")
+    client = PinchtabGeminiClient(token=TOKEN)
+    client.generate_image("A futuristic gemstone ring")

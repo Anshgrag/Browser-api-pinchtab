@@ -1,0 +1,6 @@
+*.log
+__pycache__/
+.gradio/
+generated_rings_browser/
+generated_rings_api/
+.DS_Store
