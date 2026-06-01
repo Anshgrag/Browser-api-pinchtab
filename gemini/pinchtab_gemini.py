@@ -6,7 +6,7 @@ import re
 import subprocess
 
 def get_pinchtab_token():
-    """Tries to retrieve the token from the environment variable or 'pinchtab config show'."""
+    """Tries to retrieve the token from the environment variable, CLI, or config file."""
     # 1. Try environment variable
     token = os.environ.get("PINCHTAB_TOKEN", "").strip()
     if token:
@@ -14,14 +14,35 @@ def get_pinchtab_token():
     
     # 2. Try to fetch from pinchtab CLI
     try:
-        # We use 'pinchtab config show' and parse it
-        result = subprocess.run(["pinchtab", "config", "show"], capture_output=True, text=True, check=False)
+        # On Windows, we often need shell=True for npm-installed commands
+        is_windows = os.name == 'nt'
+        result = subprocess.run(
+            ["pinchtab", "config", "show"], 
+            capture_output=True, 
+            text=True, 
+            check=False, 
+            shell=is_windows
+        )
         if result.returncode == 0:
             for line in result.stdout.splitlines():
                 if "Token:" in line:
-                    return line.split("Token:", 1)[1].strip()
+                    t = line.split("Token:", 1)[1].strip()
+                    if t: return t
     except Exception:
         pass
+
+    # 3. Fallback: Try reading the config file directly
+    try:
+        home = os.path.expanduser("~")
+        config_path = os.path.join(home, ".pinchtab", "config.json")
+        if os.path.exists(config_path):
+            with open(config_path, "r") as f:
+                config = json.load(f)
+                t = config.get("server", {}).get("token")
+                if t: return t
+    except Exception:
+        pass
+        
     return ""
 
 class PinchtabGeminiClient:
