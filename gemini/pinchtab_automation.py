@@ -3,12 +3,17 @@ from PIL import Image, ImageStat
 import gradio as gr
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pinchtab_gemini import PinchtabGeminiClient
+from pinchtab_gemini import PinchtabGeminiClient, get_pinchtab_token
 
 # ──────────────────────────────────────────────────────────────
 #  CONFIGURATION
 # ──────────────────────────────────────────────────────────────
-PINCHTAB_TOKEN = os.environ.get("PINCHTAB_TOKEN", "")
+PINCHTAB_TOKEN = get_pinchtab_token()
+if PINCHTAB_TOKEN:
+    print(f"🔑 Pinchtab token found: {PINCHTAB_TOKEN[:4]}...{PINCHTAB_TOKEN[-4:]}")
+else:
+    print("⚠️ No Pinchtab token found. If you get 401 errors, set PINCHTAB_TOKEN env var or check 'pinchtab config'.")
+
 PINCHTAB_URL = os.environ.get("PINCHTAB_URL", "http://localhost:9868")
 
 OUTPUT_DIR     = "generated_rings_browser"

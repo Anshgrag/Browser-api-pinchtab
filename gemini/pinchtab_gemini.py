@@ -3,14 +3,35 @@ import time
 import json
 import os
 import re
+import subprocess
+
+def get_pinchtab_token():
+    """Tries to retrieve the token from the environment variable or 'pinchtab config show'."""
+    # 1. Try environment variable
+    token = os.environ.get("PINCHTAB_TOKEN", "").strip()
+    if token:
+        return token
+    
+    # 2. Try to fetch from pinchtab CLI
+    try:
+        # We use 'pinchtab config show' and parse it
+        result = subprocess.run(["pinchtab", "config", "show"], capture_output=True, text=True, check=False)
+        if result.returncode == 0:
+            for line in result.stdout.splitlines():
+                if "Token:" in line:
+                    return line.split("Token:", 1)[1].strip()
+    except Exception:
+        pass
+    return ""
 
 class PinchtabGeminiClient:
     def __init__(self, base_url="http://localhost:9868", token=None):
         self.base_url = base_url
         self.headers = {
-            "Authorization": f"Bearer {token}" if token else "",
             "Content-Type": "application/json"
         }
+        if token:
+            self.headers["Authorization"] = f"Bearer {token}"
 
     def navigate(self, url, tab_id=None, new_tab=False):
         print(f"Navigating to {url}...")
@@ -138,6 +159,6 @@ class PinchtabGeminiClient:
 
 # Usage Example
 if __name__ == "__main__":
-    TOKEN = os.environ.get("PINCHTAB_TOKEN", "")
+    TOKEN = get_pinchtab_token()
     client = PinchtabGeminiClient(token=TOKEN)
     client.generate_image("A futuristic gemstone ring")
