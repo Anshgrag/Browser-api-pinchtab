@@ -29,6 +29,10 @@ MAX_GALLERY_ITEMS = 24
 #  PINCHTAB CLIENT
 # ──────────────────────────────────────────────────────────────
 client = PinchtabGeminiClient(base_url=PINCHTAB_URL, token=PINCHTAB_TOKEN)
+# Ensure bridge is ready before proceeding
+if not client.wait_for_ready():
+    print("❌ Critical Error: Could not connect to Pinchtab Bridge. Please check if it is running.")
+    # We don't exit here to allow the Gradio UI to still load, but generations will fail
 
 # ──────────────────────────────────────────────────────────────
 #  QUALITY PROMPT

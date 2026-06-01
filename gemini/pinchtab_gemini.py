@@ -54,6 +54,20 @@ class PinchtabGeminiClient:
         if token:
             self.headers["Authorization"] = f"Bearer {token}"
 
+    def wait_for_ready(self, timeout=30):
+        print(f"⏳ Waiting for Pinchtab Bridge at {self.base_url}...")
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                resp = requests.get(f"{self.base_url}/health", timeout=2)
+                if resp.status_code in [200, 401]: # 401 means it's alive but needs auth
+                    print("✅ Bridge is reachable!")
+                    return True
+            except Exception:
+                pass
+            time.sleep(1)
+        return False
+
     def navigate(self, url, tab_id=None, new_tab=False):
         print(f"Navigating to {url}...")
         payload = {"url": url}
@@ -61,7 +75,13 @@ class PinchtabGeminiClient:
             payload["tabId"] = tab_id
         if new_tab:
             payload["newTab"] = True
+        
+        # Pinchtab uses POST for navigation actions
         resp = requests.post(f"{self.base_url}/navigate", headers=self.headers, json=payload)
+        
+        if resp.status_code == 401:
+            raise Exception("401 Unauthorized: Pinchtab token is missing or invalid. Run 'pinchtab security down' to disable auth.")
+            
         resp.raise_for_status()
         return resp.json()
 
