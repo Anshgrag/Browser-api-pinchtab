@@ -46,17 +46,17 @@ you must log in to your Google Account once so your session is saved:
 ------------------------------------------------------------------------
 STEP 3: RUNNING THE APPLICATION
 ------------------------------------------------------------------------
-To launch the system:
-
---- FOR MAC USERS ---
-1. Double-click the file named "start_app.command" inside this folder.
-2. A Terminal window will open, clean up ports, launch the browser bridge,
-   and boot your local web application.
+The system is now split into two optimized versions:
 
 --- FOR WINDOWS USERS ---
-1. Double-click the file named "start_app.bat" inside this folder.
-2. A Command Prompt window will open, clean up ports, launch the bridge,
-   and boot your local web application.
+1. Open the folder: `gemini/windows/`
+2. Double-click `run_windows.bat`.
+   (This version is optimized for Windows PATH and security settings)
+
+--- FOR MAC USERS ---
+1. Open the folder: `gemini/mac/`
+2. Double-click `run_mac.command`.
+   (This version is optimized for Mac's Unix-based bridge handling)
 
 --- FOR BOTH ---
 3. Open your browser and navigate to the printed links:
