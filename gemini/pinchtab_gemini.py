@@ -59,13 +59,20 @@ class PinchtabGeminiClient:
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
+                # We check health endpoint
                 resp = requests.get(f"{self.base_url}/health", timeout=2)
                 if resp.status_code in [200, 401]: # 401 means it's alive but needs auth
                     print("✅ Bridge is reachable!")
                     return True
-            except Exception:
+            except requests.exceptions.ConnectionError:
+                # Still starting up
                 pass
+            except Exception as e:
+                print(f"  (Bridge status check: {e})")
+            
             time.sleep(1)
+        
+        print(f"❌ Timed out waiting for bridge at {self.base_url} after {timeout}s.")
         return False
 
     def navigate(self, url, tab_id=None, new_tab=False):
