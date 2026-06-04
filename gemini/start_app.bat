@@ -36,7 +36,7 @@ call %PINCHTAB_EXEC% security down
 echo 🌐 Starting Pinchtab Browser Bridge (Port 9868)...
 :: Create an empty log file to avoid 'file not found' errors
 echo [%DATE% %TIME%] Starting bridge... > pinchtab_bridge.log
-start /b cmd /c "call %PINCHTAB_EXEC% bridge --port 9868 -y >> pinchtab_bridge.log 2>&1"
+start /b cmd /c "call %PINCHTAB_EXEC% bridge --port 9868 >> pinchtab_bridge.log 2>&1"
 
 echo ⏳ Waiting for bridge to warm up (this may take 30-60s if using npx for the first time)...
 set SUCCESS=0
@@ -72,7 +72,7 @@ if !SUCCESS! equ 0 (
     echo ------------------------------------------
     echo.
     echo Troubleshooting:
-    echo 1. Run this manually: npx -y pinchtab bridge --port 9868 -y
+    echo 1. Run this manually: npx -y pinchtab bridge --port 9868
     echo 2. Check if another browser instance is conflicting.
     echo 3. Ensure you have internet access (needed for npx fallback).
     pause

@@ -45,13 +45,13 @@ pinchtab security down >/dev/null 2>&1
 
 # 2. Start Pinchtab Bridge on port 9868
 echo "🌐 Starting Pinchtab Browser Bridge (Port 9868)..."
-pinchtab bridge --port 9868 -y > pinchtab_bridge.log 2>&1 &
+pinchtab bridge --port 9868 > pinchtab_bridge.log 2>&1 &
 sleep 5
 
 # Check if bridge started successfully
 if ! lsof -i :9868 > /dev/null; then
     # Fallback to absolute binary path if needed
-    /Users/applem1pro/.local/state/fnm_multishells/83177_1779390468267/bin/pinchtab bridge --port 9868 -y > pinchtab_bridge.log 2>&1 &
+    /Users/applem1pro/.local/state/fnm_multishells/83177_1779390468267/bin/pinchtab bridge --port 9868 > pinchtab_bridge.log 2>&1 &
     sleep 5
 fi
 

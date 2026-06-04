@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluid Intelligence | Gemini Jewelry Bridge</title>
+    <style>
+        :root {
+            --bg: #fdfdfd;
+            --primary: #111111;
+            --accent: #ff3e00;
+            --secondary: #0047ff;
+            --font: 'Space Grotesk', -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--primary);
+            font-family: var(--font);
+            overflow-x: hidden;
+            line-height: 1.4;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: contrast(120%) brightness(110%);
+        }
+
+        main {
+            padding: 4vw;
+        }
+
+        .hero {
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding-bottom: 10vh;
+        }
+
+        h1 {
+            font-size: 15vw;
+            line-height: 0.85;
+            letter-spacing: -0.05em;
+            text-transform: uppercase;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            mix-blend-mode: difference;
+            color: #fff;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            max-width: 40ch;
+            margin-left: auto;
+            text-align: right;
+            border-right: 4px solid var(--accent);
+            padding-right: 2rem;
+        }
+
+        .section {
+            margin-top: 20vh;
+            padding-top: 4vh;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 4vw;
+            align-items: start;
+        }
+
+        h2 {
+            font-size: 4rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .content {
+            font-size: 1.25rem;
+        }
+
+        .brutalist-card {
+            background: #fff;
+            border: 1px solid var(--primary);
+            padding: 2rem;
+            box-shadow: 20px 20px 0 var(--primary);
+            margin-bottom: 4rem;
+            transition: all 0.3s ease;
+        }
+
+        .brutalist-card:hover {
+            transform: translate(-10px, -10px);
+            box-shadow: 30px 30px 0 var(--accent);
+        }
+
+        .flow-visual {
+            position: relative;
+            height: 400px;
+            background: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .orb {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: var(--accent);
+            border-radius: 50%;
+            filter: blur(40px);
+            animation: move 10s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
+        }
+
+        .orb-2 {
+            background: var(--secondary);
+            animation-delay: -5s;
+        }
+
+        @keyframes move {
+            from { transform: translate(-100px, -100px); }
+            to { transform: translate(100px, 100px); }
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat {
+            font-size: 3rem;
+            font-weight: 800;
+            border-bottom: 8px solid var(--primary);
+        }
+
+        .label {
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            margin-top: 0.5rem;
+        }
+
+        .code-block {
+            background: #111;
+            color: #eee;
+            padding: 2rem;
+            font-family: monospace;
+            font-size: 1rem;
+            overflow-x: auto;
+            border-left: 10px solid var(--secondary);
+        }
+
+        footer {
+            margin-top: 20vh;
+            padding: 4vw 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-top: 1px solid #000;
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            h1 { font-size: 20vw; }
+            h2 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <main>
+        <section class="hero">
+            <h1>FLUID<br>BRIDGE</h1>
+            <div class="tagline">
+                Gemini Jewelry Automation. An organic synthesis of local orchestration and cloud intelligence.
+            </div>
+        </section>
+
+        <section class="section grid">
+            <div>
+                <h2>Concept</h2>
+            </div>
+            <div class="content">
+                <div class="brutalist-card">
+                    <p>The core philosophy is <strong>frictionless automation</strong>. By treating the browser as a programmable environment, we bypass the rigid boundaries of traditional APIs to create a fluid exchange of jewelry design data.</p>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat">100%<div class="label">Native Integration</div></div>
+                    <div class="stat">0<div class="label">API Costs</div></div>
+                    <div class="stat">4K<div class="label">Potential Res</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section grid">
+            <div>
+                <h2>Mechanics</h2>
+            </div>
+            <div class="content">
+                <div class="flow-visual">
+                    <div class="orb"></div>
+                    <div class="orb orb-2"></div>
+                    <div style="color: #fff; z-index: 1; font-weight: 900; font-size: 2rem; text-transform: uppercase;">Data Liquidity</div>
+                </div>
+                <div style="margin-top: 2rem;">
+                    <p>The system utilizes a <strong>Non-Invasive Bridge</strong> (Pinchtab) to inject instructions directly into the DOM, capturing the output via high-speed canvas serialization.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section grid">
+            <div>
+                <h2>Protocol</h2>
+            </div>
+            <div class="content">
+                <div class="code-block">
+                    [System.Protocol]<br>
+                    - Initialize: local.gradio<br>
+                    - Tunnel: pinchtab.bridge<br>
+                    - Target: gemini.google.dom<br>
+                    - Extraction: blob.toDataURL<br>
+                    - Output: jewelry.final_render
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div>
+                <strong>FLUID INTELLIGENCE</strong><br>
+                v1.0 / Deployment 2026
+            </div>
+            <div style="text-align: right;">
+                DRIVEN BY PYTHON<br>
+                POWERED BY GEMINI
+            </div>
+        </footer>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // --- LIQUID FLOW BACKGROUND ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const geometry = new THREE.PlaneGeometry(20, 20, 64, 64);
+        
+        // Shader Material for Liquid Effect
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uColor1: { value: new THREE.Color(0xff3e00) },
+                uColor2: { value: new THREE.Color(0x0047ff) }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                uniform float uTime;
+                void main() {
+                    vUv = uv;
+                    vec3 pos = position;
+                    pos.z += sin(pos.x * 0.5 + uTime) * 0.5;
+                    pos.z += cos(pos.y * 0.5 + uTime) * 0.5;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec2 vUv;
+                uniform float uTime;
+                uniform vec3 uColor1;
+                uniform vec3 uColor2;
+                void main() {
+                    float noise = sin(vUv.x * 10.0 + uTime) * 0.5 + 0.5;
+                    vec3 finalColor = mix(uColor1, uColor2, noise);
+                    gl_FragColor = vec4(finalColor, 0.15);
+                }
+            `,
+            transparent: true,
+            wireframe: true
+        });
+
+        const plane = new THREE.Mesh(geometry, material);
+        plane.rotation.x = -Math.PI / 3;
+        scene.add(plane);
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            material.uniforms.uTime.value += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Intersection Observer for scroll feel
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.section').forEach(s => {
+            s.style.opacity = 0;
+            s.style.transform = 'translateY(50px)';
+            s.style.transition = 'all 1s ease-out';
+            observer.observe(s);
+        });
+    </script>
+</body>
+</html>

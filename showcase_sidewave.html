@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en" class="lenis lenis-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidewave | Multi-Model Autonomous Orchestrator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #f0f0f0;
+            --accent: #ff3366;
+            --accent2: #00e5ff;
+            --font-head: 'Oswald', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        html.lenis { height: auto; }
+        .lenis.lenis-smooth { scroll-behavior: auto !important; }
+        .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+        .lenis.lenis-stopped { overflow: hidden; }
+        .lenis.lenis-scrolling iframe { pointer-events: none; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3 { font-family: var(--font-head); text-transform: uppercase; }
+        
+        .hero-title {
+            font-size: clamp(3rem, 10vw, 12rem);
+            line-height: 0.85;
+            margin: 0;
+            letter-spacing: -2px;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+        }
+
+        .hero-title .char {
+            display: inline-block;
+            transform: translateY(110%);
+            opacity: 0;
+        }
+
+        .subtitle {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--accent2);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 2rem;
+            opacity: 0;
+        }
+
+        /* --- LAYOUT --- */
+        .vertical-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 5vw;
+            position: relative;
+        }
+
+        .horizontal-wrapper {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .horizontal-container {
+            display: flex;
+            width: 600vw; /* 6 sections now */
+            height: 100%;
+        }
+
+        .panel {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 5vw;
+        }
+
+        /* --- VISUAL ELEMENTS --- */
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .circle-blur {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        /* --- CARDS & CONTENT --- */
+        .content-block {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 5vw;
+            align-items: center;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        .big-number {
+            position: absolute;
+            font-family: var(--font-head);
+            font-size: 30vw;
+            color: rgba(255,255,255,0.02);
+            line-height: 1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .tech-box {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            transform: translateY(50px);
+            opacity: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-box::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: var(--accent);
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: transform 0.6s ease;
+        }
+
+        .tech-box.is-active::after { transform: scaleY(1); }
+
+        .tech-title { font-size: 3.5rem; margin-bottom: 1rem; line-height: 1; }
+        .tech-desc { font-size: 1.1rem; line-height: 1.6; color: #aaa; margin-bottom: 2rem; }
+        .code-window { background: #000; border: 1px solid #333; border-radius: 6px; padding: 1.5rem; font-family: var(--font-mono); font-size: 0.8rem; color: #00e5ff; }
+
+        /* --- SVG PATH --- */
+        #connection-line {
+            position: absolute;
+            top: 0; left: 0;
+            width: 600vw;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .path-bg { stroke: rgba(255,255,255,0.05); stroke-width: 2; fill: none; }
+        .path-glow { stroke: var(--accent); stroke-width: 4; fill: none; filter: drop-shadow(0 0 10px var(--accent)); }
+
+        /* --- MEDIA --- */
+        .media-container {
+            width: 100%;
+            height: 60vh;
+            position: relative;
+            overflow: hidden;
+            clip-path: inset(100% 0 0 0); 
+            background: #080808;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .media-inner {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            color: #222;
+            transform: scale(1.2);
+        }
+
+        .model-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 100px;
+            font-size: 0.7rem;
+            margin-right: 8px;
+            color: var(--accent2);
+            font-family: var(--font-mono);
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+
+    <!-- HERO SECTION -->
+    <section class="vertical-section" id="hero">
+        <div class="circle-blur" style="width: 50vw; height: 50vw; background: var(--accent); top: -20%; right: -10%;"></div>
+        <div class="subtitle" id="hero-sub">Universal Autonomous Orchestrator</div>
+        <h1 class="hero-title" id="hero-title">MODEL<br>AGNOSTIC</h1>
+        <p style="max-width: 500px; margin-top: 2rem; opacity: 0; line-height: 1.6;" id="hero-desc">More than just a bridge—a future-proof protocol for orchestrating multi-model browser AI. Zero API costs, infinite adaptability, autonomous precision.</p>
+    </section>
+
+    <!-- HORIZONTAL SCROLL SECTION -->
+    <div class="horizontal-wrapper">
+        <svg id="connection-line" viewBox="0 0 6000 1000" preserveAspectRatio="none">
+            <path class="path-bg" d="M 0,500 C 500,500 500,200 1000,200 C 1500,200 1500,800 2000,800 C 2500,800 2500,500 3000,500 C 3500,500 3500,300 4000,300 C 4500,300 4500,700 5000,700 C 5500,700 5500,500 6000,500" />
+            <path class="path-glow" id="draw-path" d="M 0,500 C 500,500 500,200 1000,200 C 1500,200 1500,800 2000,800 C 2500,800 2500,500 3000,500 C 3500,500 3500,300 4000,300 C 4500,300 4500,700 5000,700 C 5500,700 5500,500 6000,500" stroke-dasharray="7000" stroke-dashoffset="7000" />
+        </svg>
+
+        <div class="horizontal-container">
+            
+            <!-- PANEL 1: THE CORE (THE PROBLEM) -->
+            <div class="panel">
+                <div class="big-number">01</div>
+                <div class="content-block">
+                    <div class="tech-box">
+                        <h2 class="tech-title">THE<br>FRAGMENT</h2>
+                        <p class="tech-desc"><strong>THE PROBLEM:</strong> The AI landscape is fragmented. Today it's Gemini, tomorrow it's Claude or Midjourney. Vendor lock-in and high API taxation prevent true autonomous scaling for jewelry designers and retouchers.</p>
+                        <div style="color: var(--accent); font-family: var(--font-mono); font-size: 0.9rem;">
+                            [STATUS]: FRAGMENTED_ECOSYSTEM<br>
+                            [LOAD]: VENDOR_LOCK_IN
+                        </div>
+                    </div>
+                    <div class="media-container img-reveal">
+                        <div class="media-inner">ERR_API_LIMIT_REACHED</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 2: THE ADAPTOR (THE SOLUTION) -->
+            <div class="panel">
+                <div class="big-number">02</div>
+                <div class="content-block">
+                    <div class="media-container img-reveal">
+                        <div class="media-inner" style="color: var(--accent2);">[ ORCHESTRATOR.INIT ]</div>
+                    </div>
+                    <div class="tech-box" style="border-color: var(--accent2);">
+                        <style>.panel:nth-child(2) .tech-box::after { background: var(--accent2); }</style>
+                        <h2 class="tech-title" style="color: var(--accent2);">UNIVERSAL<br>ADAPTOR</h2>
+                        <p class="tech-desc"><strong>THE SOLUTION:</strong> A model-agnostic bridge. By leveraging browser-level automation (Pinchtab), we decouple logic from specific APIs. This allows the orchestrator to swap "Intelligence Providers" instantly—from Gemini to ChatGPT to custom local models.</p>
+                        <div>
+                            <span class="model-tag">Gemini</span><span class="model-tag">GPT-4o</span><span class="model-tag">Claude 3.5</span><span class="model-tag">DALL-E 3</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 3: THE PLUGIN (EXPANDABILITY) -->
+            <div class="panel">
+                <div class="big-number">03</div>
+                <div class="content-block">
+                    <div class="tech-box">
+                        <h2 class="tech-title">PLUGIN<br>ARCH</h2>
+                        <p class="tech-desc"><strong>FUTURE PROOF:</strong> New models are added as simple "Bridge Plugins". Each plugin handles the specific DOM selectors and interaction patterns of a new AI web interface, making the system indefinitely expandable.</p>
+                        <div class="code-window">
+                            <code>class ClaudePlugin(BaseBridge):<br>&nbsp;&nbsp;def send_prompt(self, text):<br>&nbsp;&nbsp;&nbsp;&nbsp;return self.eval("document.query('.chat-input')...")</code>
+                        </div>
+                    </div>
+                    <div class="media-container img-reveal">
+                        <div class="media-inner">MODULE_SWAP_READY</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 4: THE DOM (TECHNICAL) -->
+            <div class="panel">
+                <div class="big-number">04</div>
+                <div class="content-block">
+                    <div class="media-container img-reveal">
+                        <div class="media-inner">0x88 -> MULTI_INJECT</div>
+                    </div>
+                    <div class="tech-box" style="border-color: var(--accent);">
+                         <style>.panel:nth-child(4) .tech-box::after { background: var(--accent); }</style>
+                        <h2 class="tech-title">CROSS-DOM<br>INJECT</h2>
+                        <p class="tech-desc"><strong>THE PROTOCOL:</strong> Pinchtab established a universal tunnel. Whether it's React, Svelte, or Next.js—our engine bypasses the UI layer to inject raw technical prompts into any model's workspace.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 5: THE PIXEL (EXTRACTION) -->
+            <div class="panel">
+                <div class="big-number">05</div>
+                <div class="content-block">
+                    <div class="tech-box">
+                        <h2 class="tech-title">UNIVERSAL<br>PULL</h2>
+                        <p class="tech-desc"><strong>EXTRACTION:</strong> No matter which AI generates the image, our Canvas-Based Pixel Extraction remains the standard. It provides a lossless, 1:1 data pull from any browser-based visual output.</p>
+                        <div class="code-window">
+                            <code># Universal Extraction Hook<br>img_data = self.canvas_serialize(selector="img[ai-generated]")</code>
+                        </div>
+                    </div>
+                    <div class="media-container img-reveal">
+                        <div class="media-inner" style="color: var(--accent);">[ PIXEL_SERIALIZE ]</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 6: THE ECOSYSTEM (RESULT) -->
+            <div class="panel" style="flex-direction: column; text-align: center;">
+                <div class="circle-blur" style="width: 40vw; height: 40vw; background: var(--accent2); top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+                <h2 class="tech-title" style="font-size: 8vw;" id="final-text">ECOSYSTEM<br>READY</h2>
+                <p class="tech-desc" style="max-width: 600px; margin: 2rem auto;">An autonomous orchestrator designed to outlast individual models. Ready for whatever AI comes next.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <section class="vertical-section" style="height: 30vh; align-items: center; justify-content: center;">
+        <p style="font-family: var(--font-mono); color: #444; letter-spacing: 4px;">// ORCHESTRATOR_STATUS: MULTI_MODEL_ACTIVE</p>
+    </section>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time)=> lenis.raf(time * 1000));
+        gsap.ticker.lagSmoothing(0);
+
+        function splitText(element) {
+            const text = element.innerText;
+            element.innerHTML = '';
+            text.split('').forEach(char => {
+                element.innerHTML += char === ' ' ? '&nbsp;' : char === '\n' ? '<br>' : `<span class="char">${char}</span>`;
+            });
+        }
+
+        const heroTitle = document.getElementById('hero-title');
+        heroTitle.innerHTML = '<span class="word">MODEL</span><br><span class="word">AGNOSTIC</span>';
+        document.querySelectorAll('.word').forEach(word => splitText(word));
+
+        const tlHero = gsap.timeline();
+        tlHero.to('#hero-sub', { opacity: 1, y: -20, duration: 1, ease: 'power3.out', delay: 0.5 })
+              .to('.char', { y: '0%', opacity: 1, duration: 1.2, stagger: 0.05, ease: 'expo.out' }, '-=0.5')
+              .to('#hero-desc', { opacity: 1, duration: 1 }, '-=0.5');
+
+        const horizontalContainer = document.querySelector('.horizontal-container');
+        const panels = gsap.utils.toArray('.panel');
+
+        let scrollTween = gsap.to(panels, {
+            xPercent: -100 * (panels.length - 1),
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".horizontal-wrapper",
+                pin: true,
+                scrub: 1,
+                end: () => "+=" + horizontalContainer.offsetWidth,
+            }
+        });
+
+        gsap.to('#draw-path', {
+            strokeDashoffset: 0,
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".horizontal-wrapper",
+                start: "top top",
+                end: () => "+=" + horizontalContainer.offsetWidth,
+                scrub: 1
+            }
+        });
+
+        panels.forEach((panel, i) => {
+            const number = panel.querySelector('.big-number');
+            if (number) {
+                gsap.to(number, {
+                    x: () => -window.innerWidth * 0.4,
+                    ease: "none",
+                    scrollTrigger: { trigger: panel, containerAnimation: scrollTween, start: "left right", end: "right left", scrub: true }
+                });
+            }
+
+            const imgContainer = panel.querySelector('.media-container');
+            if (imgContainer) {
+                gsap.to(imgContainer, {
+                    clipPath: 'inset(0% 0% 0% 0%)',
+                    duration: 1.5,
+                    ease: 'expo.inOut',
+                    scrollTrigger: { trigger: panel, containerAnimation: scrollTween, start: "left 70%", toggleActions: "play none none reverse" }
+                });
+            }
+
+            const techBox = panel.querySelector('.tech-box');
+            if (techBox) {
+                gsap.to(techBox, {
+                    y: 0, opacity: 1, duration: 1, ease: 'power3.out',
+                    onComplete: () => techBox.classList.add('is-active'),
+                    onReverseComplete: () => techBox.classList.remove('is-active'),
+                    scrollTrigger: { trigger: panel, containerAnimation: scrollTween, start: "left 60%", toggleActions: "play none none reverse" }
+                });
+            }
+        });
+
+        const finalTitle = document.getElementById('final-text');
+        if(finalTitle) {
+            splitText(finalTitle);
+            gsap.from(finalTitle.querySelectorAll('.char'), {
+                y: 100, opacity: 0, stagger: 0.05, duration: 1, ease: 'back.out(1.7)',
+                scrollTrigger: { trigger: panels[5], containerAnimation: scrollTween, start: "left 50%", toggleActions: "play none none reverse" }
+            });
+        }
+    </script>
+</body>
+</html>

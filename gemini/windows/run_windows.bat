@@ -3,10 +3,6 @@ setlocal enabledelayedexpansion
 title Pinchtab Gemini Jewelry Automation System
 echo 🚀 Starting Pinchtab Gemini Jewelry Automation System (Bulletproof Mode)...
 
-:: DIAGNOSTIC: REMOVE THIS PAUSE ONCE WORKING
-echo DEBUG: Script started. If you see this, the batch file is executing.
-pause
-
 :: Change to the directory where this script is located
 echo 📂 Navigating to script directory...
 cd /d "%~dp0"
@@ -64,7 +60,7 @@ if %errorlevel% neq 0 (
 
 echo 🚀 Launching bridge process in background...
 :: Use double quotes for the command string to be safe
-start /b cmd /c "call %PINCHTAB_EXEC% bridge --port 9868 -y >> "%LOG_FILE%" 2>&1"
+start /b cmd /c "call %PINCHTAB_EXEC% bridge --port 9868 >> "%LOG_FILE%" 2>&1"
 
 echo ⏳ Waiting for bridge to warm up (this may take 30-60s if using npx for the first time)...
 set SUCCESS=0
@@ -102,7 +98,7 @@ if !SUCCESS! equ 0 (
     echo ------------------------------------------
     echo.
     echo Troubleshooting:
-    echo 1. Run this manually: npx -y pinchtab bridge --port 9868 -y
+    echo 1. Run this manually: npx -y pinchtab bridge --port 9868
     echo 2. Check if another browser instance is conflicting.
     echo 3. Ensure you have internet access (needed for npx fallback).
     pause
