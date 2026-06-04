@@ -3,6 +3,24 @@ setlocal enabledelayedexpansion
 title 💍 Pinchtab Gemini Bulletproof Setup (Windows)
 
 :: ======================================================================
+::  PHASE 0: ENVIRONMENT DIAGNOSTIC
+:: ======================================================================
+echo 🔍 PHASE 0: Environment Diagnostic...
+
+:: Check for Chrome in common locations
+set "CHROME_FOUND=0"
+if exist "C:\Program Files\Google\Chrome\Application\chrome.exe" set "CHROME_FOUND=1"
+if exist "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" set "CHROME_FOUND=1"
+if exist "%LocalAppData%\Google\Chrome\Application\chrome.exe" set "CHROME_FOUND=1"
+
+if "%CHROME_FOUND%"=="0" (
+    echo ⚠️ WARNING: Could not find Google Chrome in standard locations.
+    echo Automation might fail if Chrome is not in your PATH.
+) else (
+    echo ✅ Google Chrome found.
+)
+
+:: ======================================================================
 ::  PHASE 1: INITIALIZATION
 :: ======================================================================
 echo 🚀 PHASE 1: Initializing environment...
