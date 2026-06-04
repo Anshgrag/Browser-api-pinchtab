@@ -91,14 +91,24 @@ call %PINCHTAB_CMD% security down
 
 :: Extract the token for our curl requests
 echo 🔍 Extracting Pinchtab Token...
+set "PT_TOKEN="
 for /f "tokens=2" %%a in ('call %PINCHTAB_CMD% config show ^| findstr "Token:"') do (
     set "PT_TOKEN=%%a"
 )
 
-if "%PT_TOKEN%"=="" (
-    echo ⚠️  Could not extract token. Navigation will fail if security is ELEVATED.
+if "!PT_TOKEN!"=="" (
+    echo ⚠️  Could not automatically extract token.
+    echo Please enter your Pinchtab Token manually.
+    echo (You can find it by running: pinchtab config show)
+    set /p PT_TOKEN="Token: "
+)
+
+if "!PT_TOKEN!"=="" (
+    echo ❌ ERROR: No token provided. Automation will likely fail with 401.
 ) else (
-    echo ✅ Token extracted: !PT_TOKEN:~0,5!*****
+    echo ✅ Token ready: !PT_TOKEN:~0,5!*****
+    :: Export to environment for this session
+    set "PINCHTAB_TOKEN=!PT_TOKEN!"
 )
 
 :: ======================================================================

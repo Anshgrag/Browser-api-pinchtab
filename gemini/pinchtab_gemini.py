@@ -10,6 +10,7 @@ def get_pinchtab_token():
     # 1. Try environment variable
     token = os.environ.get("PINCHTAB_TOKEN", "").strip()
     if token:
+        print(f"✅ Found token in environment: {token[:5]}*****")
         return token
     
     # 2. Try to fetch from pinchtab CLI
@@ -26,7 +27,9 @@ def get_pinchtab_token():
                     for line in result.stdout.splitlines():
                         if "Token:" in line:
                             t = line.split("Token:", 1)[1].strip()
-                            if t: return t
+                            if t:
+                                print(f"✅ Extracted token from CLI: {t[:5]}*****")
+                                return t
             except: continue
     except Exception:
         pass
@@ -46,12 +49,13 @@ def get_pinchtab_token():
                 with open(config_path, "r") as f:
                     config = json.load(f)
                     t = config.get("server", {}).get("token")
-                    if t: return t
+                    if t:
+                        print(f"✅ Read token from config file: {t[:5]}*****")
+                        return t
     except Exception:
         pass
         
-    # If no token is found, we return a dummy string if security is likely down, 
-    # or empty string which will cause 401 if security is up.
+    print("⚠️  No valid token found in environment, CLI, or config.")
     return "NO_TOKEN_REQUIRED"
 
 class PinchtabGeminiClient:
