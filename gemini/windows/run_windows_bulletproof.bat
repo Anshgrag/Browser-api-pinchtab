@@ -79,8 +79,9 @@ echo 🌐 PHASE 4: Starting Browser Bridge...
 set "LOG_FILE=%~dp0pinchtab_bridge.log"
 echo [%DATE% %TIME%] Starting bridge... > "%LOG_FILE%"
 
-:: Start the bridge in the background
-start /b cmd /c "call %PINCHTAB_CMD% bridge --port 9868 >> "%LOG_FILE%" 2>&1"
+:: Start the bridge in a NEW VISIBLE WINDOW for better reliability and visibility
+echo   - Launching bridge in a separate terminal...
+start "Pinchtab Bridge Server" cmd /c "call %PINCHTAB_CMD% bridge --port 9868"
 
 echo ⏳ Waiting for bridge to warm up...
 set /a "counter=1"
@@ -97,10 +98,7 @@ if %counter% leq 15 goto :BRIDGE_CHECK_LOOP
 
 :BRIDGE_FAIL
 echo ❌ ERROR: Bridge failed to start after 45 seconds.
-echo.
-echo --- RECENT LOGS ---
-if exist "%LOG_FILE%" type "%LOG_FILE%"
-echo -------------------
+echo 💡 Check the separate "Pinchtab Bridge Server" window for errors.
 pause
 exit /b
 
@@ -113,12 +111,19 @@ echo ✅ Bridge is online!
 echo 👤 PHASE 5: Browser Authentication
 echo.
 echo ⚠️  IMPORTANT: For automation to work, you MUST be logged in to Gemini.
-echo 1. A Chrome window will open shortly.
-echo 2. If you are NOT logged in to Google/Gemini, please LOG IN MANUALLY.
-echo 3. Once you see the Gemini chat interface, come back here.
+echo 1. A Chrome window should open automatically to Gemini.
+echo 2. If it DOES NOT open, type this manually in a new terminal:
+echo    %PINCHTAB_CMD% navigate "https://gemini.google.com/app" --port 9868
 echo.
-echo 🚀 Opening Gemini for verification...
+echo 🚀 Attempting to open Gemini...
+ping -n 5 127.0.0.1 >nul
 call %PINCHTAB_CMD% navigate "https://gemini.google.com/app" --port 9868
+
+if %errorlevel% neq 0 (
+    echo ⚠️  Navigation command failed. Trying fallback...
+    call %PINCHTAB_CMD% navigate "https://gemini.google.com/app"
+)
+
 echo.
 echo 🕒 Waiting for you to verify/login...
 echo (Press any key once you are at the Gemini chat screen)
