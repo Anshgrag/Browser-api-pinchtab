@@ -88,7 +88,18 @@ if %errorlevel% neq 0 (
 
 echo 🔑 Disabling Pinchtab security...
 call %PINCHTAB_CMD% security down
-if %errorlevel% neq 0 echo ⚠️ Warning: Security down failed, continuing...
+
+:: Extract the token for our curl requests (since security down seems to be failing to apply)
+echo 🔍 Extracting Pinchtab Token...
+for /f "tokens=2" %%a in ('call %PINCHTAB_CMD% config show ^| findstr "Token:"') do (
+    set "PT_TOKEN=%%a"
+)
+
+if "%PT_TOKEN%"=="" (
+    echo ⚠️  Could not extract token. Navigation might fail if security is still ELEVATED.
+) else (
+    echo ✅ Token extracted successfully.
+)
 
 :: ======================================================================
 ::  PHASE 4: BRIDGE STARTUP
@@ -136,8 +147,11 @@ echo.
 echo 🚀 Attempting to open Gemini via Bridge API...
 ping -n 5 127.0.0.1 >nul
 
-:: Use curl to talk directly to the bridge API (more reliable than CLI flags)
-curl -X POST http://localhost:9868/navigate -H "Content-Type: application/json" -d "{\"url\":\"https://gemini.google.com/app\",\"newTab\":true}" >nul 2>&1
+:: Use curl to talk directly to the bridge API with the token
+curl -X POST http://localhost:9868/navigate ^
+     -H "Content-Type: application/json" ^
+     -H "Authorization: Bearer %PT_TOKEN%" ^
+     -d "{\"url\":\"https://gemini.google.com/app\",\"newTab\":true}"
 
 if %errorlevel% neq 0 (
     echo ⚠️  API Navigation failed. Trying CLI fallback...
