@@ -89,16 +89,16 @@ if %errorlevel% neq 0 (
 echo 🔑 Disabling Pinchtab security...
 call %PINCHTAB_CMD% security down
 
-:: Extract the token for our curl requests (since security down seems to be failing to apply)
+:: Extract the token for our curl requests
 echo 🔍 Extracting Pinchtab Token...
 for /f "tokens=2" %%a in ('call %PINCHTAB_CMD% config show ^| findstr "Token:"') do (
     set "PT_TOKEN=%%a"
 )
 
 if "%PT_TOKEN%"=="" (
-    echo ⚠️  Could not extract token. Navigation might fail if security is still ELEVATED.
+    echo ⚠️  Could not extract token. Navigation will fail if security is ELEVATED.
 ) else (
-    echo ✅ Token extracted successfully.
+    echo ✅ Token extracted: !PT_TOKEN:~0,5!*****
 )
 
 :: ======================================================================
