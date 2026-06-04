@@ -32,9 +32,28 @@ if %errorlevel% neq 0 (
 ::  PHASE 2: CLEANUP
 :: ======================================================================
 echo 🧹 PHASE 2: Cleaning up previous sessions...
-:: Kill any existing processes on relevant ports
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":7861" ^| findstr "LISTENING"') do taskkill /F /PID %%a 2>nul
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":9868" ^| findstr "LISTENING"') do taskkill /F /PID %%a 2>nul
+
+:: Simplified port cleaning (Flat commands, no loops)
+echo   - Checking Port 7861...
+netstat -ano | findstr ":7861" | findstr "LISTENING" > port_7861.tmp
+if %errorlevel% equ 0 (
+    for /f "tokens=5" %%a in (port_7861.tmp) do (
+        echo     🔪 Killing process %%a on 7861
+        taskkill /F /PID %%a 2>nul
+    )
+)
+del port_7861.tmp 2>nul
+
+echo   - Checking Port 9868...
+netstat -ano | findstr ":9868" | findstr "LISTENING" > port_9868.tmp
+if %errorlevel% equ 0 (
+    for /f "tokens=5" %%a in (port_9868.tmp) do (
+        echo     🔪 Killing process %%a on 9868
+        taskkill /F /PID %%a 2>nul
+    )
+)
+del port_9868.tmp 2>nul
+
 ping -n 2 127.0.0.1 >nul
 
 :: ======================================================================
@@ -42,7 +61,6 @@ ping -n 2 127.0.0.1 >nul
 :: ======================================================================
 echo 🔓 PHASE 3: Setting up Pinchtab...
 
-:: Check if pinchtab is installed, otherwise use npx
 set "PINCHTAB_CMD=pinchtab"
 where pinchtab >nul 2>&1
 if %errorlevel% neq 0 (
@@ -50,40 +68,43 @@ if %errorlevel% neq 0 (
     set "PINCHTAB_CMD=npx -y pinchtab"
 )
 
-echo 🔑 Disabling Pinchtab security (so no token is needed)...
+echo 🔑 Disabling Pinchtab security...
 call %PINCHTAB_CMD% security down
-if %errorlevel% neq 0 (
-    echo ⚠️ WARNING: Security down failed. Attempting to continue anyway.
-)
+if %errorlevel% neq 0 echo ⚠️ Warning: Security down failed, continuing...
 
 :: ======================================================================
 ::  PHASE 4: BRIDGE STARTUP
 :: ======================================================================
 echo 🌐 PHASE 4: Starting Browser Bridge...
 set "LOG_FILE=%~dp0pinchtab_bridge.log"
-echo Starting bridge... > "%LOG_FILE%"
+echo [%DATE% %TIME%] Starting bridge... > "%LOG_FILE%"
 
 :: Start the bridge in the background
 start /b cmd /c "call %PINCHTAB_CMD% bridge --port 9868 >> "%LOG_FILE%" 2>&1"
 
 echo ⏳ Waiting for bridge to warm up...
-set "READY=0"
-for /L %%i in (1,1,15) do (
-    ping -n 3 127.0.0.1 >nul
-    netstat -aon | findstr ":9868" | findstr "LISTENING" >nul
-    if !errorlevel! equ 0 (
-        set "READY=1"
-        goto :BRIDGE_READY
-    )
-    echo ... checking (attempt %%i/15) ...
-)
+set /a "counter=1"
+
+:BRIDGE_CHECK_LOOP
+ping -n 3 127.0.0.1 >nul
+echo ... checking (attempt %counter%/15) ...
+
+netstat -ano | findstr ":9868" | findstr "LISTENING" >nul
+if %errorlevel% equ 0 goto :BRIDGE_READY
+
+set /a "counter+=1"
+if %counter% leq 15 goto :BRIDGE_CHECK_LOOP
+
+:BRIDGE_FAIL
+echo ❌ ERROR: Bridge failed to start after 45 seconds.
+echo.
+echo --- RECENT LOGS ---
+if exist "%LOG_FILE%" type "%LOG_FILE%"
+echo -------------------
+pause
+exit /b
 
 :BRIDGE_READY
-if "%READY%"=="0" (
-    echo ❌ ERROR: Bridge failed to start. See %LOG_FILE% for details.
-    pause
-    exit /b
-)
 echo ✅ Bridge is online!
 
 :: ======================================================================
@@ -97,10 +118,10 @@ echo 2. If you are NOT logged in to Google/Gemini, please LOG IN MANUALLY.
 echo 3. Once you see the Gemini chat interface, come back here.
 echo.
 echo 🚀 Opening Gemini for verification...
-:: We can use pinchtab to navigate to Gemini to trigger the window
 call %PINCHTAB_CMD% navigate "https://gemini.google.com/app" --port 9868
 echo.
-echo 🕒 Waiting for you to verify/login... (Press any key once you are at the Gemini chat screen)
+echo 🕒 Waiting for you to verify/login...
+echo (Press any key once you are at the Gemini chat screen)
 pause
 
 :: ======================================================================
@@ -111,10 +132,15 @@ set "PYTHON_CMD=python"
 where python >nul 2>&1
 if %errorlevel% neq 0 set "PYTHON_CMD=py"
 
+echo 🎨 Starting Gradio (Port 7861)...
 %PYTHON_CMD% -u pinchtab_automation.py
 
 echo.
 echo 🛑 Shutting down...
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":7861" ^| findstr "LISTENING"') do taskkill /F /PID %%a 2>nul
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":9868" ^| findstr "LISTENING"') do taskkill /F /PID %%a 2>nul
+:: Final cleanup
+netstat -ano | findstr ":7861" | findstr "LISTENING" > port_7861.tmp
+for /f "tokens=5" %%a in (port_7861.tmp) do taskkill /F /PID %%a 2>nul
+netstat -ano | findstr ":9868" | findstr "LISTENING" > port_9868.tmp
+for /f "tokens=5" %%a in (port_9868.tmp) do taskkill /F /PID %%a 2>nul
+del *.tmp 2>nul
 pause
