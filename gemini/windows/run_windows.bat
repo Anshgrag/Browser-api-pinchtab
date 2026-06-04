@@ -1,7 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
 title Pinchtab Gemini Jewelry Automation System
-echo 🚀 Starting Pinchtab Gemini Jewelry Automation System (Bulletproof Mode)...
+
+:: FORCE PAUSE AT START
+echo 🔍 DIAGNOSTIC MODE: STARTING...
+pause
 
 :: Change to the directory where this script is located
 echo 📂 Navigating to script directory...
