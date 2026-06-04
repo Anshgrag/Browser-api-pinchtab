@@ -112,15 +112,17 @@ echo 👤 PHASE 5: Browser Authentication
 echo.
 echo ⚠️  IMPORTANT: For automation to work, you MUST be logged in to Gemini.
 echo 1. A Chrome window should open automatically to Gemini.
-echo 2. If it DOES NOT open, type this manually in a new terminal:
-echo    %PINCHTAB_CMD% navigate "https://gemini.google.com/app" --port 9868
+echo 2. If it DOES NOT open, please open your browser to:
+echo    https://gemini.google.com/app
 echo.
-echo 🚀 Attempting to open Gemini...
+echo 🚀 Attempting to open Gemini via Bridge API...
 ping -n 5 127.0.0.1 >nul
-call %PINCHTAB_CMD% navigate "https://gemini.google.com/app" --port 9868
+
+:: Use curl to talk directly to the bridge API (more reliable than CLI flags)
+curl -X POST http://localhost:9868/navigate -H "Content-Type: application/json" -d "{\"url\":\"https://gemini.google.com/app\",\"newTab\":true}" >nul 2>&1
 
 if %errorlevel% neq 0 (
-    echo ⚠️  Navigation command failed. Trying fallback...
+    echo ⚠️  API Navigation failed. Trying CLI fallback...
     call %PINCHTAB_CMD% navigate "https://gemini.google.com/app"
 )
 
