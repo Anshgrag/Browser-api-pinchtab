@@ -14,33 +14,29 @@ def get_pinchtab_token():
     
     # 2. Try to fetch from pinchtab CLI
     try:
-        # On Windows, we often need shell=True for npm-installed commands
         is_windows = os.name == 'nt'
-        result = subprocess.run(
-            ["pinchtab", "config", "show"], 
-            capture_output=True, 
-            text=True, 
-            check=False, 
-            shell=is_windows
-        )
-        if result.returncode == 0:
-            for line in result.stdout.splitlines():
-                if "Token:" in line:
-                    t = line.split("Token:", 1)[1].strip()
-                    if t: return t
+        # Try both 'pinchtab' and 'npx pinchtab'
+        cmds = [["pinchtab", "config", "show"]]
+        if is_windows: cmds.append(["npx.cmd", "pinchtab", "config", "show"])
+        
+        for cmd in cmds:
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, check=False, shell=is_windows)
+                if result.returncode == 0:
+                    for line in result.stdout.splitlines():
+                        if "Token:" in line:
+                            t = line.split("Token:", 1)[1].strip()
+                            if t: return t
+            except: continue
     except Exception:
         pass
 
-    # 3. Fallback: Try reading the config file directly from multiple possible paths
+    # 3. Fallback: Try reading the config file directly
     try:
         paths_to_check = []
-        
-        # Standard home directory check
         home = os.environ.get("USERPROFILE") or os.path.expanduser("~")
         if home:
             paths_to_check.append(os.path.join(home, ".pinchtab", "config.json"))
-            
-        # Windows AppData fallback
         appdata = os.environ.get("APPDATA")
         if appdata:
             paths_to_check.append(os.path.join(appdata, "pinchtab", "config.json"))
@@ -54,7 +50,9 @@ def get_pinchtab_token():
     except Exception:
         pass
         
-    return ""
+    # If no token is found, we return a dummy string if security is likely down, 
+    # or empty string which will cause 401 if security is up.
+    return "NO_TOKEN_REQUIRED"
 
 class PinchtabGeminiClient:
     def __init__(self, base_url="http://localhost:9868", token=None):
