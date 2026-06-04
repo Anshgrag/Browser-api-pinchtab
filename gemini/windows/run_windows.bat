@@ -3,6 +3,10 @@ setlocal enabledelayedexpansion
 title Pinchtab Gemini Jewelry Automation System
 echo 🚀 Starting Pinchtab Gemini Jewelry Automation System (Bulletproof Mode)...
 
+:: DIAGNOSTIC: REMOVE THIS PAUSE ONCE WORKING
+echo DEBUG: Script started. If you see this, the batch file is executing.
+pause
+
 :: Change to the directory where this script is located
 echo 📂 Navigating to script directory...
 cd /d "%~dp0"
@@ -39,15 +43,16 @@ echo ⏳ Cooling down...
 ping -n 3 127.0.0.1 >nul
 
 :: Detect if pinchtab is installed globally
-set PINCHTAB_EXEC=pinchtab
+set "PINCHTAB_EXEC=pinchtab"
 where pinchtab >nul 2>&1
 if %errorlevel% neq 0 (
     echo 💡 pinchtab command not found globally, falling back to npx...
-    set PINCHTAB_EXEC=npx -y pinchtab
+    set "PINCHTAB_EXEC=npx -y pinchtab"
 )
 
 echo 🔓 Disabling Pinchtab security...
 call %PINCHTAB_EXEC% security down
+if %errorlevel% neq 0 echo ⚠️ Warning: Security down command failed, continuing...
 
 echo 🌐 Starting Pinchtab Browser Bridge (Port 9868)...
 :: Create an empty log file with absolute path to avoid 'file not found' errors
@@ -58,6 +63,7 @@ if %errorlevel% neq 0 (
 )
 
 echo 🚀 Launching bridge process in background...
+:: Use double quotes for the command string to be safe
 start /b cmd /c "call %PINCHTAB_EXEC% bridge --port 9868 -y >> "%LOG_FILE%" 2>&1"
 
 echo ⏳ Waiting for bridge to warm up (this may take 30-60s if using npx for the first time)...
