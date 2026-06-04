@@ -167,11 +167,16 @@ pause
 ::  PHASE 6: START AUTOMATION
 :: ======================================================================
 echo 🐍 PHASE 6: Launching Gradio UI...
+
+:: CRITICAL: Pass the token we found to the Python script
+set "PINCHTAB_TOKEN=%PT_TOKEN%"
+
 set "PYTHON_CMD=python"
 where python >nul 2>&1
 if %errorlevel% neq 0 set "PYTHON_CMD=py"
 
 echo 🎨 Starting Gradio (Port 7861)...
+echo 🔑 Using Token: !PINCHTAB_TOKEN:~0,5!*****
 %PYTHON_CMD% -u pinchtab_automation.py
 
 echo.
