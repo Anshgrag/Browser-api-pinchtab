@@ -30,15 +30,26 @@ def get_pinchtab_token():
     except Exception:
         pass
 
-    # 3. Fallback: Try reading the config file directly from Windows User Profile
+    # 3. Fallback: Try reading the config file directly from multiple possible Windows paths
     try:
-        home = os.environ.get("USERPROFILE")
-        config_path = os.path.join(home, ".pinchtab", "config.json")
-        if os.path.exists(config_path):
-            with open(config_path, "r") as f:
-                config = json.load(f)
-                t = config.get("server", {}).get("token")
-                if t: return t
+        paths_to_check = []
+        
+        # Check USERPROFILE\.pinchtab\config.json
+        home = os.environ.get("USERPROFILE") or os.path.expanduser("~")
+        if home:
+            paths_to_check.append(os.path.join(home, ".pinchtab", "config.json"))
+            
+        # Check APPDATA\pinchtab\config.json (Standard Windows AppData location)
+        appdata = os.environ.get("APPDATA")
+        if appdata:
+            paths_to_check.append(os.path.join(appdata, "pinchtab", "config.json"))
+
+        for config_path in paths_to_check:
+            if os.path.exists(config_path):
+                with open(config_path, "r") as f:
+                    config = json.load(f)
+                    t = config.get("server", {}).get("token")
+                    if t: return t
     except Exception:
         pass
         
